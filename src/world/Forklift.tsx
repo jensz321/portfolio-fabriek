@@ -5,6 +5,7 @@ import { CuboidCollider, RigidBody, type RapierRigidBody } from '@react-three/ra
 import * as THREE from 'three'
 import { WORLD, palette } from '../layout'
 import { useStore } from '../store'
+import { debugCam, playerPos } from './player'
 
 export type Controls = 'forward' | 'back' | 'left' | 'right' | 'reset'
 
@@ -68,6 +69,12 @@ export function Forklift() {
     if (p.y < -10) rb.setTranslation({ x: WORLD.spawn[0], y: WORLD.spawn[1], z: WORLD.spawn[2] }, true)
 
     _pos.set(p.x, p.y, p.z)
+    playerPos.copy(_pos)
+    if (debugCam) {
+      state.camera.position.set(debugCam[0], debugCam[1], debugCam[2])
+      state.camera.lookAt(debugCam[3], debugCam[4], debugCam[5])
+      return
+    }
     _camTarget.copy(_pos).add(CAMERA_OFFSET)
     state.camera.position.lerp(_camTarget, 1 - Math.exp(-4 * dt))
     state.camera.lookAt(_pos.x, _pos.y + 1, _pos.z)
@@ -92,8 +99,14 @@ export function Forklift() {
   )
 }
 
-function ForkliftModel({ mastRef }: { mastRef: React.RefObject<THREE.Group | null> }) {
-  const yellow = <meshStandardMaterial color={palette.yellow} roughness={0.6} />
+export function ForkliftModel({
+  mastRef,
+  color = palette.yellow,
+}: {
+  mastRef?: React.RefObject<THREE.Group | null>
+  color?: string
+}) {
+  const yellow = <meshStandardMaterial color={color} roughness={0.6} />
   const dark = <meshStandardMaterial color={palette.dark} roughness={0.8} />
   const steel = <meshStandardMaterial color={palette.steel} metalness={0.4} roughness={0.5} />
 

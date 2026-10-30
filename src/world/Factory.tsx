@@ -6,6 +6,12 @@ import * as THREE from 'three'
 import { profile, zones, type ZoneId } from '../content'
 import { WORLD, palette, zoneLayout, type Vec3 } from '../layout'
 import { Zone } from './Zone'
+import { Kit } from './kit'
+import { Conveyor, type ConveyorHandle } from './life/Conveyor'
+import { RobotArm } from './life/RobotArm'
+import { Cargo } from './life/Cargo'
+import { ParkedCar } from './life/Vehicles'
+import { Life } from './life/Life'
 
 // Greybox-fabriek: alles is opgebouwd uit simpele vormen in code.
 // Later kunnen losse onderdelen vervangen worden door GLB-modellen.
@@ -28,6 +34,7 @@ export function Factory() {
       <Warehouse />
       <LoadingDock />
       <Props />
+      <Life />
     </>
   )
 }
@@ -201,56 +208,64 @@ function Silos() {
 function AssemblyLine() {
   const [zx, , zz] = zoneLayout.route.pos
   const z = zz - 8
-  const length = 26
+  const length = 24
   const stations = zones.route.list ?? []
-  const crates = useRef<THREE.Group>(null)
+  const belt = useRef<ConveyorHandle>(null)
   const lamp = useRef<THREE.MeshStandardMaterial>(null)
 
   useFrame(({ clock }) => {
-    const t = clock.elapsedTime
-    crates.current?.children.forEach((c, i) => {
-      c.position.x = (((t * 1.6 + i * (length / 6)) % length) + length) % length - length / 2
-    })
-    if (lamp.current) lamp.current.emissiveIntensity = 1 + Math.sin(t * 5) * 0.9
+    if (lamp.current) lamp.current.emissiveIntensity = 1 + Math.sin(clock.elapsedTime * 5) * 0.9
   })
 
   return (
-    <group position={[zx, 0, z]}>
-      <Box pos={[0, 0.5, 0]} size={[length, 1, 2]} color={palette.dark} />
-      <mesh position={[0, 1.01, 0]} rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[length, 1.6]} />
-        <meshStandardMaterial color="#45474f" />
-      </mesh>
-      <group ref={crates}>
-        {Array.from({ length: 6 }, (_, i) => (
-          <mesh key={i} position={[0, 1.4, 0]} castShadow>
-            <boxGeometry args={[0.8, 0.8, 0.8]} />
-            <meshStandardMaterial color={palette.yellow} />
-          </mesh>
-        ))}
+    <group>
+      <Conveyor ref={belt} start={[zx - length / 2 - 1, 0, z]} tiles={length / 4} pool={9} speed={2} />
+      {/* robotarm zet dozen van de pallet op het begin van de band */}
+      <RobotArm
+        position={[zx - length / 2 + 1, 0, z - 3]}
+        pick={-Math.PI / 2}
+        place={0}
+        period={6}
+        onRelease={(p) => belt.current?.spawn(p.setY(1.6))}
+      />
+      <Pallet pos={[zx - length / 2 - 2.2, 0, z - 3]} />
+      <Kit name="scanner-high" position={[zx - 2.7, 0, z]} />
+      <group position={[zx, 0, z]}>
+        {stations.map((s, i) => {
+          const x = -length / 2 + 7 + i * ((length - 10) / (stations.length - 1))
+          return (
+            <group key={s.name} position={[x, 0, 0]}>
+              <Box pos={[0, 3, 0]} size={[3, 0.6, 2.8]} color={s.now ? palette.green : palette.steel} physics={false} />
+              <Box pos={[-1.4, 1.5, -1.5]} size={[0.25, 3, 0.25]} color={palette.dark} />
+              <Box pos={[1.4, 1.5, -1.5]} size={[0.25, 3, 0.25]} color={palette.dark} />
+              <Label pos={[0, 3, 1.42]} size={0.32} color={palette.cream}>
+                {String(i + 1).padStart(2, '0')}
+              </Label>
+              <Label pos={[0, 0.05, 2.6]} rot={FLAT} size={0.3}>
+                {s.name.length > 22 ? s.name.slice(0, 20) + '…' : s.name}
+              </Label>
+              {s.now && (
+                <mesh position={[0, 3.6, 0]}>
+                  <sphereGeometry args={[0.25, 16, 16]} />
+                  <meshStandardMaterial ref={lamp} color={palette.green} emissive={palette.green} />
+                </mesh>
+              )}
+            </group>
+          )
+        })}
       </group>
-      {stations.map((s, i) => {
-        const x = -length / 2 + 3 + i * ((length - 6) / (stations.length - 1))
-        return (
-          <group key={s.name} position={[x, 0, 0]}>
-            <Box pos={[0, 2.6, -0.2]} size={[3, 0.6, 2.6]} color={s.now ? palette.green : palette.steel} physics={false} />
-            <Box pos={[-1.4, 1.5, -1.3]} size={[0.2, 3, 0.2]} color={palette.dark} />
-            <Box pos={[1.4, 1.5, -1.3]} size={[0.2, 3, 0.2]} color={palette.dark} />
-            <Label pos={[0, 2.6, 1.12]} size={0.32} color={palette.cream}>
-              {String(i + 1).padStart(2, '0')}
-            </Label>
-            <Label pos={[0, 0.05, 2.2]} rot={FLAT} size={0.3}>
-              {s.name.length > 22 ? s.name.slice(0, 20) + '…' : s.name}
-            </Label>
-            {s.now && (
-              <mesh position={[0, 3.2, -0.2]}>
-                <sphereGeometry args={[0.25, 16, 16]} />
-                <meshStandardMaterial ref={lamp} color={palette.green} emissive={palette.green} />
-              </mesh>
-            )}
-          </group>
-        )
-      })}
+    </group>
+  )
+}
+
+// Een pallet met gestapelde dozen (decor, waar de robotarm "van pakt").
+function Pallet({ pos }: { pos: Vec3 }) {
+  return (
+    <group position={pos}>
+      <Box pos={[0, 0.15, 0]} size={[2, 0.3, 2]} color="#b58a5a" />
+      <Kit name="box-large" position={[0, 0.3, 0]} />
+      <Kit name="box-small" position={[-0.4, 1.4, 0.2]} rotation-y={0.2} />
+      <Kit name="box-small" position={[0.5, 1.4, -0.1]} rotation-y={-0.1} />
     </group>
   )
 }
@@ -329,46 +344,20 @@ function PadPlannerMachine() {
   )
 }
 
-function Car({ pos, color, plate }: { pos: Vec3; color: string; plate?: string }) {
-  return (
-    <RigidBody position={pos} colliders={false} mass={20} linearDamping={2} angularDamping={2}>
-      <CuboidCollider args={[1, 0.75, 2]} position={[0, 0.85, 0]} />
-      <mesh castShadow position={[0, 0.7, 0]}>
-        <boxGeometry args={[2, 0.9, 4]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-      <mesh castShadow position={[0, 1.45, -0.2]}>
-        <boxGeometry args={[1.8, 0.7, 2.2]} />
-        <meshStandardMaterial color={palette.cream} />
-      </mesh>
-      {plate && (
-        <>
-          <mesh position={[0, 0.6, 2.01]}>
-            <planeGeometry args={[1.3, 0.32]} />
-            <meshStandardMaterial color={palette.yellow} />
-          </mesh>
-          <Label pos={[0, 0.6, 2.02]} size={0.18}>
-            {plate}
-          </Label>
-        </>
-      )}
-    </RigidBody>
-  )
-}
-
 function Parking() {
   const [zx, , zz] = zoneLayout['wie-rijdt'].pos
   const x = zx + 10
   return (
     <group>
-      {[-3, 0, 3].map((dx) => (
+      {[-3, 0, 3, 6].map((dx) => (
         <mesh key={dx} rotation-x={-Math.PI / 2} position={[x + dx + 1.5, 0.03, zz]}>
           <planeGeometry args={[0.15, 5]} />
           <meshBasicMaterial color={palette.cream} />
         </mesh>
       ))}
-      <Car pos={[x - 1.5, 0, zz]} color={palette.orange} plate="WIE RIJDT?" />
-      <Car pos={[x + 1.6, 0, zz + 0.4]} color={palette.blue} />
+      <ParkedCar position={[x - 1.5, 0, zz]} rotation={Math.PI} model="hatchback-sports" plate="WIE RIJDT?" />
+      <ParkedCar position={[x + 1.6, 0, zz + 0.3]} rotation={Math.PI} model="sedan" />
+      <ParkedCar position={[x + 4.6, 0, zz - 0.2]} rotation={Math.PI} model="suv" />
       <Label pos={[x, 0.05, zz + 4]} rot={FLAT} size={0.5}>
         P · 4 PERSONEN · 1 AUTO
       </Label>
@@ -466,7 +455,17 @@ function LoadingDock() {
   const doors = (zones.contact.links ?? []).map((l) => l.label.replace(' ↗', '').toUpperCase())
   return (
     <group>
-      <Box pos={[zx, 3, z]} size={[20, 6, 3]} color={palette.wall} />
+      <Box pos={[zx + 3, 3, z]} size={[26, 6, 3]} color={palette.wall} />
+      <group position={[zx + 13, 0, z + 1.52]}>
+        <mesh position={[0, 2.2, 0]}>
+          <planeGeometry args={[3.6, 4.4]} />
+          <meshStandardMaterial color={palette.dark} />
+        </mesh>
+        <Box pos={[0, 4.9, 0.1]} size={[3, 0.8, 0.1]} color={palette.yellow} physics={false} />
+        <Label pos={[0, 4.9, 0.17]} size={0.4}>
+          LADING
+        </Label>
+      </group>
       {doors.map((label, i) => {
         const x = zx - 6 + i * 6
         return (
@@ -499,17 +498,17 @@ function LoadingDock() {
 
 function Props() {
   const barrels: Vec3[] = [
-    [10, 0.7, 30],
-    [11.2, 0.7, 30.6],
-    [10.4, 0.7, 31.6],
-    [-12, 0.7, -22],
-    [36, 0.7, 4],
+    [10, 0.7, 36],
+    [11.2, 0.7, 36.6],
+    [10.4, 0.7, 37.6],
+    [-6, 0.7, -30],
+    [38, 0.7, 6],
   ]
   const cones: Vec3[] = [
-    [-5, 0.4, 32],
-    [5, 0.4, 32],
-    [-5, 0.4, 26],
-    [5, 0.4, 26],
+    [-5, 0.4, 34],
+    [5, 0.4, 34],
+    [-6.5, 0.4, 44],
+    [6.5, 0.4, 44],
   ]
   return (
     <>
@@ -529,10 +528,20 @@ function Props() {
           </mesh>
         </RigidBody>
       ))}
-      <Crate pos={[16, 0.6, 6]} />
-      <Crate pos={[16, 1.8, 6]} />
-      <Crate pos={[17.3, 0.6, 6.3]} />
-      <Crate pos={[-14, 0.6, 8]} />
+      {/* stapels dozen om doorheen te rijden */}
+      {[
+        [14, 22],
+        [-12, 40],
+        [36, -2],
+        [-40, 10],
+      ].map(([x, z]) => (
+        <group key={`${x}${z}`}>
+          <Cargo variant="box-large" position={[x, 0, z]} />
+          <Cargo variant="box-large" position={[x + 2.4, 0, z]} />
+          <Cargo variant="box-large" position={[x + 1.2, 1.15, z]} />
+          <Cargo variant="box-small" position={[x + 1.2, 2.3, z]} />
+        </group>
+      ))}
     </>
   )
 }

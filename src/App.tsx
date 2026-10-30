@@ -24,12 +24,12 @@ export default function App() {
     <KeyboardControls map={keyMap}>
       <Canvas shadows camera={{ fov: 40, position: [14, 20, 70], near: 0.5, far: 300 }} dpr={[1, 2]}>
         <color attach="background" args={[palette.sky]} />
-        <fog attach="fog" args={[palette.sky, 60, 140]} />
-        <hemisphereLight args={['#fff8ee', '#b8ad9c', 1.4]} />
+        <fog attach="fog" args={[palette.sky, 75, 170]} />
+        <hemisphereLight args={['#f4f0ff', '#9d97b5', 1.0]} />
         <directionalLight
           castShadow
           position={[30, 50, 25]}
-          intensity={2.2}
+          intensity={3.2}
           shadow-mapSize={[4096, 4096]}
           shadow-camera-left={-70}
           shadow-camera-right={70}

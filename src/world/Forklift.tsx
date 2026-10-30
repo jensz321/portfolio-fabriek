@@ -25,6 +25,7 @@ const _euler = new THREE.Euler()
 export function Forklift() {
   const body = useRef<RapierRigidBody>(null)
   const mast = useRef<THREE.Group>(null)
+  const visual = useRef<THREE.Group>(null)
   const speed = useRef(0)
   const [, getKeys] = useKeyboardControls<Controls>()
 
@@ -69,7 +70,10 @@ export function Forklift() {
     const p = rb.translation()
     if (p.y < -10) rb.setTranslation({ x: WORLD.spawn[0], y: WORLD.spawn[1], z: WORLD.spawn[2] }, true)
 
-    _pos.set(p.x, p.y, p.z)
+    // Camera en NPC's volgen de getekende (geïnterpoleerde) positie, niet de physics-stap:
+    // physics loopt op 60 Hz, het scherm vaak op 120 Hz, anders hapert de camera.
+    if (visual.current) visual.current.getWorldPosition(_pos)
+    else _pos.set(p.x, p.y, p.z)
     playerPos.copy(_pos)
     if (debugCam) {
       state.camera.position.set(debugCam[0], debugCam[1], debugCam[2])
@@ -95,7 +99,9 @@ export function Forklift() {
     >
       <CuboidCollider args={[0.9, 0.7, 1.4]} position={[0, 0.8, 0]} />
       <CuboidCollider args={[0.7, 0.1, 0.8]} position={[0, 0.25, 2.1]} mass={0.1} />
-      <ForkliftModel mastRef={mast} />
+      <group ref={visual}>
+        <ForkliftModel mastRef={mast} />
+      </group>
     </RigidBody>
   )
 }

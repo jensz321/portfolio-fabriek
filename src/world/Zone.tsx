@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { zones, type ZoneId } from '../content'
 import { zoneLayout } from '../layout'
 import { useStore } from '../store'
+import { FONT } from './style'
 
 // Een vak op de vloer: rij erin en het bijbehorende paneel klapt open.
 export function Zone({ id }: { id: ZoneId }) {
@@ -47,6 +48,7 @@ export function Zone({ id }: { id: ZoneId }) {
         position={[0, 0.04, d / 2 - 1.1]}
         fontSize={0.9}
         color={color}
+        font={FONT.display}
         anchorX="center"
         anchorY="middle"
       >

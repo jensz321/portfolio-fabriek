@@ -3,7 +3,8 @@ import { useFrame } from '@react-three/fiber'
 import { useKeyboardControls } from '@react-three/drei'
 import { CuboidCollider, RigidBody, type RapierRigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
-import { WORLD, palette } from '../layout'
+import { WORLD } from '../layout'
+import { FLAT as COLOR, KitBox, KitCylinder, type Swatch } from './style'
 import { useStore } from '../store'
 import { debugCam, playerPos } from './player'
 
@@ -101,82 +102,55 @@ export function Forklift() {
 
 export function ForkliftModel({
   mastRef,
-  color = palette.yellow,
+  swatch = 'yellow',
 }: {
   mastRef?: React.RefObject<THREE.Group | null>
-  color?: string
+  swatch?: Swatch
 }) {
-  const yellow = <meshStandardMaterial color={color} roughness={0.6} />
-  const dark = <meshStandardMaterial color={palette.dark} roughness={0.8} />
-  const steel = <meshStandardMaterial color={palette.steel} metalness={0.4} roughness={0.5} />
-
   return (
     <group>
-      {/* chassis */}
-      <mesh castShadow receiveShadow position={[0, 0.7, -0.1]}>
-        <boxGeometry args={[1.7, 0.8, 2.4]} />
-        {yellow}
-      </mesh>
+      {/* chassis met afgeronde randen, zoals de kit-voertuigen */}
+      <KitBox size={[1.75, 0.85, 2.5]} swatch={swatch} radius={0.25} position={[0, 0.75, -0.1]} />
       {/* contragewicht */}
-      <mesh castShadow position={[0, 0.9, -1.2]}>
-        <boxGeometry args={[1.6, 1, 0.5]} />
-        {dark}
-      </mesh>
-      {/* stoel */}
-      <mesh castShadow position={[0, 1.3, -0.4]}>
-        <boxGeometry args={[0.7, 0.5, 0.6]} />
-        {dark}
-      </mesh>
+      <KitBox size={[1.7, 1.05, 0.6]} swatch="navy" radius={0.22} position={[0, 0.95, -1.2]} />
+      {/* stoel + stuur */}
+      <KitBox size={[0.75, 0.55, 0.6]} swatch="charcoal" radius={0.15} position={[0, 1.4, -0.4]} />
+      <KitBox size={[0.5, 0.08, 0.08]} swatch="charcoal" radius={0.03} position={[0, 1.65, 0.35]} rotation-x={-0.5} />
       {/* kooi: 4 staanders + dak */}
       {[
-        [-0.75, 0.6],
-        [0.75, 0.6],
-        [-0.75, -0.9],
-        [0.75, -0.9],
+        [-0.78, 0.6],
+        [0.78, 0.6],
+        [-0.78, -0.9],
+        [0.78, -0.9],
       ].map(([x, z], i) => (
-        <mesh key={i} castShadow position={[x, 1.9, z]}>
-          <boxGeometry args={[0.08, 1.6, 0.08]} />
-          {dark}
-        </mesh>
+        <KitBox key={i} size={[0.12, 1.6, 0.12]} swatch="navy" radius={0.04} position={[x, 1.95, z]} />
       ))}
-      <mesh castShadow position={[0, 2.72, -0.15]}>
-        <boxGeometry args={[1.6, 0.06, 1.6]} />
-        {yellow}
-      </mesh>
+      <KitBox size={[1.75, 0.12, 1.75]} swatch={swatch} radius={0.05} position={[0, 2.78, -0.15]} />
       {/* oranje zwaailicht */}
-      <mesh position={[0.6, 2.85, -0.8]}>
-        <cylinderGeometry args={[0.1, 0.1, 0.18, 12]} />
-        <meshStandardMaterial color={palette.orange} emissive={palette.orange} emissiveIntensity={1.5} />
+      <mesh position={[0.6, 2.93, -0.8]}>
+        <cylinderGeometry args={[0.1, 0.12, 0.2, 12]} />
+        <meshStandardMaterial color={COLOR.orange} emissive={COLOR.orange} emissiveIntensity={1.5} />
       </mesh>
-      {/* wielen */}
+      {/* wielen met naaf */}
       {[
-        [-0.85, 0.75],
-        [0.85, 0.75],
-        [-0.85, -0.85],
-        [0.85, -0.85],
+        [-0.88, 0.75],
+        [0.88, 0.75],
+        [-0.88, -0.85],
+        [0.88, -0.85],
       ].map(([x, z], i) => (
-        <mesh key={i} castShadow position={[x, 0.35, z]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.35, 0.35, 0.3, 16]} />
-          {dark}
-        </mesh>
+        <group key={i} position={[x, 0.38, z]} rotation={[0, 0, Math.PI / 2]}>
+          <KitCylinder radius={0.38} height={0.34} swatch="charcoal" />
+          <KitCylinder radius={0.18} height={0.38} swatch="silver" />
+        </group>
       ))}
       {/* mast + vorken */}
-      <group ref={mastRef} position={[0, 0.2, 1.15]}>
+      <group ref={mastRef} position={[0, 0.2, 1.2]}>
         {[-0.45, 0.45].map((x) => (
-          <mesh key={x} castShadow position={[x, 1.4, 0]}>
-            <boxGeometry args={[0.12, 2.8, 0.12]} />
-            {steel}
-          </mesh>
+          <KitBox key={x} size={[0.16, 2.8, 0.16]} swatch="steel" radius={0.04} position={[x, 1.4, 0]} />
         ))}
-        <mesh castShadow position={[0, 0.35, 0.1]}>
-          <boxGeometry args={[1.1, 0.5, 0.08]} />
-          {steel}
-        </mesh>
+        <KitBox size={[1.15, 0.55, 0.12]} swatch="steel" radius={0.04} position={[0, 0.38, 0.1]} />
         {[-0.3, 0.3].map((x) => (
-          <mesh key={x} castShadow position={[x, 0.08, 0.75]}>
-            <boxGeometry args={[0.14, 0.06, 1.4]} />
-            {steel}
-          </mesh>
+          <KitBox key={x} size={[0.16, 0.07, 1.4]} swatch="steel" radius={0.02} position={[x, 0.08, 0.78]} />
         ))}
       </group>
     </group>

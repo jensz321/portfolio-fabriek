@@ -3,9 +3,10 @@ import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
 import { CuboidCollider, RigidBody, type RapierRigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
-import { palette, type Vec3 } from '../../layout'
+import type { Vec3 } from '../../layout'
 import { ForkliftModel } from '../Forklift'
-import { KIT_SCALE, useKitModel } from '../kit'
+import { Kit, KIT_SCALE, useKitModel } from '../kit'
+import { FLAT as COLOR, FONT, KitBox, type Swatch } from '../style'
 import { playerPos } from '../player'
 
 const _q = new THREE.Quaternion()
@@ -31,10 +32,10 @@ function useWheels(object: THREE.Object3D) {
 
 /* ---------- NPC die een rondje rijdt ---------- */
 
-export function LoopVehicle({ points, speed = 4, color = palette.orange, offset = 0 }: {
+export function LoopVehicle({ points, speed = 4, swatch = 'orange', offset = 0 }: {
   points: Vec3[]
   speed?: number
-  color?: string
+  swatch?: Swatch
   offset?: number
 }) {
   const body = useRef<RapierRigidBody>(null)
@@ -73,21 +74,15 @@ export function LoopVehicle({ points, speed = 4, color = palette.orange, offset 
     <RigidBody ref={body} type="kinematicPosition" colliders={false} position={[start.x, 0, start.z]}>
       <CuboidCollider args={[0.9, 0.7, 1.4]} position={[0, 0.8, 0]} />
       <CuboidCollider args={[0.6, 0.15, 0.8]} position={[0, 0.3, 2.1]} />
-      <ForkliftModel color={color} />
+      <ForkliftModel swatch={swatch} />
       <mesh position={[-0.6, 2.85, -0.8]}>
         <cylinderGeometry args={[0.1, 0.1, 0.18, 12]} />
         <meshStandardMaterial ref={lamp} color="#3da5ff" emissive="#3da5ff" />
       </mesh>
       {/* pallet met lading op de vorken */}
       <group position={[0, 0.25, 2.1]}>
-        <mesh castShadow>
-          <boxGeometry args={[1.2, 0.15, 1.3]} />
-          <meshStandardMaterial color="#b58a5a" />
-        </mesh>
-        <mesh castShadow position={[0, 0.5, 0]}>
-          <boxGeometry args={[1, 0.85, 1.1]} />
-          <meshStandardMaterial color="#e8a25a" />
-        </mesh>
+        <KitBox size={[1.3, 0.16, 1.3]} swatch="brown" radius={0.03} />
+        <Kit name="box-small" position={[0, 0.08, 0]} />
       </group>
     </RigidBody>
   )
@@ -173,9 +168,9 @@ export function ParkedCar({ position, rotation = 0, model = 'sedan', plate }: {
         <group position={[0, 0.42 * s, -1.29 * s]} rotation-y={Math.PI}>
           <mesh>
             <planeGeometry args={[1.1, 0.28]} />
-            <meshStandardMaterial color={palette.yellow} />
+            <meshStandardMaterial color={COLOR.yellow} />
           </mesh>
-          <Text position={[0, 0, 0.01]} fontSize={0.16} color={palette.dark}>
+          <Text position={[0, 0, 0.01]} fontSize={0.16} color={COLOR.navy} font={FONT.display}>
             {plate}
           </Text>
         </group>

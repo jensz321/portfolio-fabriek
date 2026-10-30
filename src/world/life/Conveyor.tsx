@@ -4,6 +4,7 @@ import { CuboidCollider, RigidBody, type RapierRigidBody } from '@react-three/ra
 import * as THREE from 'three'
 import type { Vec3 } from '../../layout'
 import { Kit } from '../kit'
+import { KitBox } from '../style'
 import { Cargo } from './Cargo'
 
 export type ConveyorHandle = {
@@ -79,10 +80,7 @@ export function Conveyor({ start, tiles, angle = 0, height = 0, speed = 2.2, poo
         ))}
         {legs.map((x) =>
           [-0.9, 0.9].map((z) => (
-            <mesh key={`${x}${z}`} position={[Math.min(Math.max(x, 0.2), length - 0.2), height / 2, z]} castShadow>
-              <boxGeometry args={[0.2, height, 0.2]} />
-              <meshStandardMaterial color="#5a5f7a" />
-            </mesh>
+            <KitBox key={`${x}${z}`} position={[Math.min(Math.max(x, 0.2), length - 0.2), height / 2, z]} size={[0.22, height, 0.22]} swatch="lavender" radius={0.05} />
           )),
         )}
         <RigidBody type="fixed" colliders={false}>

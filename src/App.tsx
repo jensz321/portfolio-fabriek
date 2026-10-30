@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { KeyboardControls, type KeyboardControlsEntry } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
+import { EffectComposer, N8AO } from '@react-three/postprocessing'
 import { Forklift, type Controls } from './world/Forklift'
 import { Factory } from './world/Factory'
 import { palette } from './layout'
@@ -44,6 +45,10 @@ export default function App() {
             <Forklift />
           </Physics>
         </Suspense>
+        {/* zachte contactschaduwen: zet alles op de vloer en tegen elkaar aan */}
+        <EffectComposer multisampling={4}>
+          <N8AO aoRadius={2.5} distanceFalloff={1.2} intensity={2.2} color="#2b2b48" halfRes />
+        </EffectComposer>
       </Canvas>
       <Hud />
       <Panel />

@@ -15,15 +15,15 @@ export const WORLD = {
 
 // Middelpunt en grootte (breedte x diepte) van elke zone op de vloer.
 export const zoneLayout: Record<ZoneId, { pos: Vec3; size: [number, number]; color: string }> = {
-  poort: { pos: [0, 0, 40], size: [14, 8], color: '#ff7a1f' },
-  over: { pos: [-28, 0, 22], size: [12, 10], color: '#5b6ee1' },
-  route: { pos: [-26, 0, -4], size: [16, 10], color: '#2fa36b' },
-  raket: { pos: [0, 0, -14], size: [14, 10], color: '#5b6ee1' },
-  padplanner: { pos: [26, 0, -12], size: [12, 10], color: '#2fa36b' },
-  'wie-rijdt': { pos: [28, 0, 22], size: [12, 10], color: '#f2b632' },
-  fabriek: { pos: [0, 0, 14], size: [8, 8], color: '#ff7a1f' },
-  school: { pos: [-22, 0, -32], size: [14, 9], color: '#f2b632' },
-  contact: { pos: [24, 0, -34], size: [14, 9], color: '#ff7a1f' },
+  poort: { pos: [0, 0, 40], size: [14, 8], color: '#ff7e44' },
+  over: { pos: [-28, 0, 22], size: [12, 10], color: '#6794d9' },
+  route: { pos: [-26, 0, -4], size: [16, 10], color: '#61cb8b' },
+  raket: { pos: [0, 0, -14], size: [14, 10], color: '#6794d9' },
+  padplanner: { pos: [26, 0, -12], size: [12, 10], color: '#61cb8b' },
+  'wie-rijdt': { pos: [28, 0, 22], size: [12, 10], color: '#ffc044' },
+  fabriek: { pos: [0, 0, 14], size: [8, 8], color: '#ff7e44' },
+  school: { pos: [-22, 0, -32], size: [14, 9], color: '#ffc044' },
+  contact: { pos: [24, 0, -34], size: [14, 9], color: '#ff7e44' },
 }
 
 // Afgestemd op de Kenney factory kit: indigo/lavendel met oranje accenten.

@@ -1,7 +1,8 @@
 import { useMemo, useRef } from 'react'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
-import { palette, type Vec3 } from '../../layout'
+import type { Vec3 } from '../../layout'
+import { FLAT as COLOR, KitBox } from '../style'
 import { Kit, preloadKit } from '../kit'
 import { Conveyor, type ConveyorHandle } from './Conveyor'
 import { RobotArm } from './RobotArm'
@@ -44,8 +45,8 @@ export function Life() {
       <Crane position={[12, 0, -2]} />
       <CraneDropZones />
 
-      <LoopVehicle points={CENTRAL_LOOP} speed={4.5} color={palette.orange} />
-      <LoopVehicle points={WAREHOUSE_LOOP} speed={3.5} color={palette.blue} offset={0.4} />
+      <LoopVehicle points={CENTRAL_LOOP} speed={4.5} swatch="orange" />
+      <LoopVehicle points={WAREHOUSE_LOOP} speed={3.5} swatch="royal" offset={0.4} />
       <DockTruck x={37} dockZ={-39.6} outZ={-22} />
 
       {/* Raket: stampende zuigers naast de schermen */}
@@ -129,10 +130,7 @@ function Bin({ position }: { position: Vec3 }) {
         [2.4, 0, 0.2, 4.4],
         [-2.4, 0, 0.2, 4.4],
       ].map(([bx, bz, w, d], i) => (
-        <mesh key={i} position={[bx, 0.6, bz]} castShadow receiveShadow>
-          <boxGeometry args={[w, 1.2, d]} />
-          <meshStandardMaterial color={palette.orange} />
-        </mesh>
+        <KitBox key={i} position={[bx, 0.6, bz]} size={[w, 1.2, d]} swatch="orange" radius={0.08} />
       ))}
     </group>
   )
@@ -182,10 +180,7 @@ function Pipes() {
         <Kit key={i} name={i % 5 === 2 ? 'pipe-large-valve' : 'pipe-large-long'} scale={1.5} position={[from + len / 2 + i * len, 4.4, 0]} />
       ))}
       {Array.from({ length: Math.floor(count / 3) + 1 }, (_, i) => (
-        <mesh key={i} position={[from + i * len * 3, 2.4, 0]} castShadow>
-          <boxGeometry args={[0.3, 4.8, 0.3]} />
-          <meshStandardMaterial color={palette.steel} />
-        </mesh>
+        <KitBox key={i} position={[from + i * len * 3, 2.4, 0]} size={[0.3, 4.8, 0.3]} swatch="steel" radius={0.06} />
       ))}
     </group>
   )
@@ -225,7 +220,7 @@ function LaneMarkings({ points }: { points: Vec3[] }) {
       receiveShadow
     >
       <boxGeometry args={[0.15, 0.01, 0.8]} />
-      <meshBasicMaterial color={palette.yellow} />
+      <meshBasicMaterial color={COLOR.yellow} />
     </instancedMesh>
   )
 }

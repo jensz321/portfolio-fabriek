@@ -2,11 +2,9 @@ import { create } from 'zustand'
 import type { ZoneId } from './content'
 
 type State = {
-  // ready: alle modellen en fonts zijn geladen. started: de bezoeker heeft op Start gedrukt.
-  ready: boolean
+  // started: alle modellen en fonts zijn geladen, de heftruck mag rijden.
   started: boolean
   setReady: () => void
-  start: () => void
   activeZone: ZoneId | null
   visited: Set<ZoneId>
   enterZone: (id: ZoneId) => void
@@ -17,10 +15,8 @@ type State = {
 }
 
 export const useStore = create<State>((set) => ({
-  ready: false,
   started: false,
-  setReady: () => set({ ready: true }),
-  start: () => set((s) => (s.ready ? { started: true } : s)),
+  setReady: () => set({ started: true }),
   activeZone: null,
   visited: new Set(),
   enterZone: (id) => set((s) => ({ activeZone: id, visited: new Set(s.visited).add(id) })),

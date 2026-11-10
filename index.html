@@ -19,7 +19,6 @@
         color: #323245; font-family: 'Instrument Sans', system-ui, sans-serif;
         transition: background 0.6s, opacity 0.6s, transform 0.6s;
       }
-      .loader--ready { background: rgb(230 227 238 / 0.55); backdrop-filter: blur(6px); }
       .loader--out { opacity: 0; transform: scale(1.04); pointer-events: none; }
       .loader__card {
         width: min(440px, 100%); box-sizing: border-box; padding: 28px;
@@ -46,14 +45,6 @@
       }
       .key--wide { padding: 0 8px; }
       .key--zone { background: rgb(103 148 217 / 0.25); border-color: #6794d9; border-bottom-width: 2px; }
-      .loader__start {
-        width: 100%; padding: 14px; border: 2px solid #323245; border-radius: 999px; cursor: pointer;
-        font: 800 18px 'Bricolage Grotesque', system-ui, sans-serif; color: #fff; background: #323245;
-        transition: background 0.2s, transform 0.1s;
-      }
-      .loader__start:not(:disabled):hover { background: #ff7e44; }
-      .loader__start:not(:disabled):active { transform: translateY(2px); }
-      .loader__start:disabled { cursor: wait; opacity: 0.5; }
       .loader__classic { display: block; margin-top: 14px; text-align: center; font-size: 13px; color: #6b6a80; }
     </style>
   </head>

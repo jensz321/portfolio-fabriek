@@ -4,26 +4,12 @@ import { useStore } from '../store'
 
 const touch = matchMedia('(pointer: coarse)').matches
 
-// Start- en laadscherm. Dezelfde opmaak staat statisch in index.html, zodat bezoekers
-// het al zien terwijl de JavaScript-bundel nog binnenkomt. De styling staat daar ook.
+// Laadscherm; verdwijnt vanzelf zodra alles geladen is. Dezelfde opmaak staat statisch in
+// index.html, zodat bezoekers het al zien terwijl de bundel binnenkomt. De styling staat daar ook.
 export function Loader() {
-  const ready = useStore((s) => s.ready)
   const started = useStore((s) => s.started)
-  const start = useStore((s) => s.start)
   const { progress } = useProgress()
   const [gone, setGone] = useState(false)
-
-  useEffect(() => {
-    if (!ready || started) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        start()
-      }
-    }
-    addEventListener('keydown', onKey)
-    return () => removeEventListener('keydown', onKey)
-  }, [ready, started, start])
 
   // Na de uitfade-animatie helemaal uit de DOM, zodat hij niets meer kost.
   useEffect(() => {
@@ -33,10 +19,10 @@ export function Loader() {
   }, [started])
 
   if (gone) return null
-  const pct = ready ? 100 : Math.min(99, Math.round(progress))
+  const pct = started ? 100 : Math.min(99, Math.round(progress))
 
   return (
-    <div className={`loader${ready ? ' loader--ready' : ''}${started ? ' loader--out' : ''}`}>
+    <div className={`loader${started ? ' loader--out' : ''}`}>
       <div className="loader__card">
         <p className="loader__kicker">[ PORTFOLIO / 2026 ]</p>
         <h1 className="loader__title">jens.</h1>
@@ -47,7 +33,7 @@ export function Loader() {
         <div className="loader__bar" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
           <div style={{ width: `${pct}%` }} />
         </div>
-        <p className="loader__status">{ready ? 'Alle machines draaien' : `Machines opstarten… ${pct}%`}</p>
+        <p className="loader__status">Machines opstarten… {pct}%</p>
 
         <ul className="loader__keys">
           {touch ? (
@@ -72,9 +58,6 @@ export function Loader() {
           </li>
         </ul>
 
-        <button className="loader__start" disabled={!ready} onClick={start}>
-          {ready ? 'Start de heftruck' : 'Even geduld…'}
-        </button>
         <a className="loader__classic" href="https://jens.vanduinkerken.net">
           Liever gewoon lezen? Klassieke versie →
         </a>

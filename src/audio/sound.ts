@@ -299,3 +299,16 @@ export function playHonk(at: THREE.Vector3, player: THREE.Vector3) {
   tone(440, t, 0.12, 0.08 * p, 'square')
   tone(440, t + 0.18, 0.12, 0.08 * p, 'square')
 }
+
+// Tikje van het rad tijdens de loting.
+export function playTick() {
+  if (!ready()) return
+  tone(1200, ctx!.currentTime, 0.04, 0.03, 'square')
+}
+
+// Klein deuntje als de uitslag bekend is.
+export function playFanfare() {
+  if (!ready()) return
+  const t = ctx!.currentTime
+  ;[523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.09, 0.35, 0.06))
+}

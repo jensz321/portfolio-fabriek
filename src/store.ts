@@ -45,3 +45,6 @@ export const useStore = create<State>((set) => ({
   touch: { x: 0, y: 0 },
   setTouch: (x, y) => set({ touch: { x, y } }),
 }))
+
+// Alleen tijdens ontwikkelen: maakt geautomatiseerde tests mogelijk (bv. een zone binnengaan).
+if (import.meta.env.DEV) (window as unknown as { __store: typeof useStore }).__store = useStore

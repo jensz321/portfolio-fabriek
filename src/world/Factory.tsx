@@ -14,6 +14,7 @@ import { RobotArm } from './life/RobotArm'
 import { Cargo } from './life/Cargo'
 import { ParkedCar } from './life/Vehicles'
 import { Life } from './life/Life'
+import { LotteryBoard, PhotoBadge, ProjectScreen } from './Personal'
 
 // De vaste gebouwen en zones. Eigen vormen gebruiken KitBox/KitCylinder,
 // zodat ze dezelfde kleuren en afgeronde randen hebben als de Kenney-modellen.
@@ -203,19 +204,21 @@ function ControlRoom() {
         <Box key={`${dx}${dz}`} pos={[x + dx, 4.4, zz + dz]} size={[0.3, 2.5, 0.3]} swatch="navy" physics={false} />
       ))}
       <Box pos={[x, 5.75, zz]} size={[7.6, 0.4, 9.6]} swatch="navy" radius={0.15} physics={false} />
-      {/* monitor met "foto" */}
+      {/* monitor met systeemstatus */}
       <Box pos={[x + 2.2, 4.2, zz]} size={[0.2, 1.7, 2.5]} swatch="charcoal" physics={false} />
       <mesh position={[x + 2.31, 4.2, zz]} rotation-y={Math.PI / 2}>
         <planeGeometry args={[2.2, 1.4]} />
-        <meshStandardMaterial color={COLOR.cream} emissive={COLOR.cream} emissiveIntensity={0.6} />
+        <meshStandardMaterial color={COLOR.green} emissive={COLOR.green} emissiveIntensity={0.6} />
       </mesh>
-      <Label pos={[x + 2.33, 4.2, zz]} rot={[0, Math.PI / 2, 0]} size={0.18}>
-        [ dit ben ik, echt waar ]
+      <Label pos={[x + 2.33, 4.2, zz]} rot={[0, Math.PI / 2, 0]} size={0.22} color={COLOR.white} display>
+        ALLES DRAAIT
       </Label>
       <Box pos={[x + 3.55, 1.6, zz]} size={[0.15, 0.9, 5.4]} swatch="royal" physics={false} />
       <Label pos={[x + 3.65, 1.6, zz]} rot={[0, Math.PI / 2, 0]} size={0.6} color={COLOR.white} display>
         CONTROLEKAMER
       </Label>
+      {/* personeelspas met foto, schuin naar de camera gedraaid */}
+      <PhotoBadge position={[zx - 6, 0, zz + 8.5]} rotation={Math.PI / 4} />
     </group>
   )
 }
@@ -386,6 +389,7 @@ function PadPlannerMachine() {
           PADPLANNER
         </Label>
       </group>
+      <ProjectScreen position={[zx + 6.4, 0, zz - 9.5]} image="/images/route.jpg" />
       <group position={[zx + 12, 0, zz]}>
         <mesh>
           <tubeGeometry args={[loop, 120, 0.12, 6, true]} />
@@ -422,6 +426,7 @@ function Parking() {
       <Label pos={[x, 0.05, zz + 4]} rot={FLAT_ROT} size={0.5}>
         P · 4 PERSONEN · 1 AUTO
       </Label>
+      <LotteryBoard position={[x + 2, 0, zz - 5.5]} />
     </group>
   )
 }

@@ -8,6 +8,8 @@ import { ForkliftModel } from '../Forklift'
 import { Kit, KIT_SCALE, useKitModel } from '../kit'
 import { FLAT as COLOR, FONT, KitBox, type Swatch } from '../style'
 import { playerPos } from '../player'
+import { playHonk } from '../../audio/sound'
+import { useEmitter } from '../../audio/useSound'
 
 const _q = new THREE.Quaternion()
 const _ahead = new THREE.Vector3()
@@ -47,6 +49,7 @@ export function LoopVehicle({ points, speed = 4, swatch = 'orange', offset = 0 }
   const length = useMemo(() => curve.getLength(), [curve])
   const s = useRef(offset * length)
   const v = useRef(0)
+  const wasBlocked = useRef(false)
   const pos = useMemo(() => new THREE.Vector3(), [])
   const tangent = useMemo(() => new THREE.Vector3(), [])
 
@@ -59,6 +62,8 @@ export function LoopVehicle({ points, speed = 4, swatch = 'orange', offset = 0 }
     curve.getTangentAt(u, tangent)
 
     const stop = blocked(pos, tangent)
+    if (stop && !wasBlocked.current) playHonk(pos, playerPos)
+    wasBlocked.current = stop
     v.current = THREE.MathUtils.lerp(v.current, stop ? 0 : speed, 1 - Math.exp(-(stop ? 8 : 2) * dt))
     s.current += v.current * dt
 
@@ -103,6 +108,9 @@ export function DockTruck({ x, dockZ, outZ, wait = 5, speed = 3.5 }: {
   const spin = useWheels(object)
   const reverse = useRef<THREE.MeshStandardMaterial>(null)
   const state = useRef({ z: outZ, target: dockZ, pause: 0 })
+  const reversing = useRef(false)
+  const sound = useRef<THREE.Group>(null)
+  useEmitter('beep', sound, () => reversing.current)
   const pos = useMemo(() => new THREE.Vector3(), [])
   const dir = useMemo(() => new THREE.Vector3(), [])
 
@@ -111,6 +119,7 @@ export function DockTruck({ x, dockZ, outZ, wait = 5, speed = 3.5 }: {
     if (!rb) return
     dt = Math.min(dt, 0.05)
     const st = state.current
+    reversing.current = false
     if (st.pause > 0) {
       st.pause -= dt
       if (reverse.current) reverse.current.emissiveIntensity = 0
@@ -127,6 +136,7 @@ export function DockTruck({ x, dockZ, outZ, wait = 5, speed = 3.5 }: {
     st.z += sign * step
     spin(sign * step)
     rb.setNextKinematicTranslation({ x, y: 0, z: st.z })
+    reversing.current = sign < 0
     if (remaining - step < 0.01) {
       st.target = st.target === dockZ ? outZ : dockZ
       st.pause = wait
@@ -138,6 +148,7 @@ export function DockTruck({ x, dockZ, outZ, wait = 5, speed = 3.5 }: {
   const s = KIT_SCALE.cars
   return (
     <RigidBody ref={body} type="kinematicPosition" colliders={false} position={[x, 0, outZ]}>
+      <group ref={sound} position={[0, 1, -2]} />
       <CuboidCollider args={[0.75 * s, 1.1 * s, 1.6 * s]} position={[0, 1.1 * s, 0]} />
       <primitive object={object} scale={s} />
       {[-0.55, 0.55].map((lx) => (

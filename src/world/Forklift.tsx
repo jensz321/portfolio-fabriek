@@ -6,7 +6,8 @@ import * as THREE from 'three'
 import { WORLD } from '../layout'
 import { FLAT as COLOR, KitBox, KitCylinder, type Swatch } from './style'
 import { useStore } from '../store'
-import { debugCam, playerHeading, playerPos } from './player'
+import { debugCam, playerDrive, playerHeading, playerPos } from './player'
+import { playImpact } from '../audio/sound'
 
 export type Controls = 'forward' | 'back' | 'left' | 'right' | 'reset'
 
@@ -29,6 +30,7 @@ export function Forklift() {
   const mast = useRef<THREE.Group>(null)
   const visual = useRef<THREE.Group>(null)
   const speed = useRef(0)
+  const lastHit = useRef(0)
   const [, getKeys] = useKeyboardControls<Controls>()
 
   useFrame((state, dt) => {
@@ -58,6 +60,8 @@ export function Forklift() {
     _euler.setFromQuaternion(_quat.set(rot.x, rot.y, rot.z, rot.w), 'YXZ')
     const yaw = _euler.y
     playerHeading.yaw = yaw
+    playerDrive.speed = speed.current / MAX_SPEED
+    playerDrive.throttle = throttle
     const v = rb.linvel()
 
     // Sturen werkt alleen als je rijdt, en achteruit draait het stuur om (zoals bij een echte truck).
@@ -99,6 +103,14 @@ export function Forklift() {
       mass={4}
       friction={0}
       ccd
+      onCollisionEnter={() => {
+        // Alleen een klap als je echt ergens tegenaan rijdt, niet bij elk tikje.
+        const strength = Math.min(1, Math.abs(speed.current) / MAX_SPEED)
+        const now = performance.now()
+        if (strength < 0.15 || now - lastHit.current < 200) return
+        lastHit.current = now
+        playImpact(strength)
+      }}
     >
       <CuboidCollider args={[0.9, 0.7, 1.4]} position={[0, 0.8, 0]} />
       <CuboidCollider args={[0.7, 0.1, 0.8]} position={[0, 0.25, 2.1]} mass={0.1} />

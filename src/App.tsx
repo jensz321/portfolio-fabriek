@@ -14,6 +14,7 @@ import { Loader } from './ui/Loader'
 import { Minimap } from './ui/Minimap'
 import { Hint } from './ui/Hint'
 import { useStore } from './store'
+import { SoundListener } from './audio/useSound'
 
 const keyMap: KeyboardControlsEntry<Controls>[] = [
   { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -34,6 +35,7 @@ export default function App() {
     <KeyboardControls map={keyMap}>
       <Canvas shadows camera={{ fov: 40, position: [14, 20, 70], near: 0.5, far: 300 }} dpr={DPR}>
         <PerfProbe />
+        <SoundListener />
         <color attach="background" args={[palette.sky]} />
         <fog attach="fog" args={[palette.sky, 75, 170]} />
         <Suspense fallback={null}>

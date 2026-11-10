@@ -5,6 +5,7 @@ import { CuboidCollider, CylinderCollider, RigidBody } from '@react-three/rapier
 import * as THREE from 'three'
 import type { Vec3 } from '../../layout'
 import { Kit, KIT_SCALE, useKitModel } from '../kit'
+import { useEmitter } from '../../audio/useSound'
 
 const smooth = (t: number) => t * t * (3 - 2 * t)
 
@@ -67,6 +68,8 @@ export function Piston({ position, offset = 0, speed = 1, name = 'piston-round' 
 }) {
   const { object, animations } = useKitModel(name)
   const { actions } = useAnimations(animations, object)
+  const group = useRef<THREE.Group>(null)
+  useEmitter('press', group)
   useEffect(() => {
     const a = actions['toggle']
     if (!a) return
@@ -75,7 +78,7 @@ export function Piston({ position, offset = 0, speed = 1, name = 'piston-round' 
     a.time = offset * a.getClip().duration
   }, [actions, offset, speed])
   return (
-    <group position={position}>
+    <group ref={group} position={position}>
       <RigidBody type="fixed" colliders={false}>
         <CuboidCollider args={[1, 1, 1]} position={[0, 1, 0]} />
       </RigidBody>
@@ -122,6 +125,7 @@ const _s = new THREE.Vector3()
 // Zachte witte wolkjes die opstijgen, groeien en weer verdwijnen.
 export function Steam({ position, rate = 1, rise = 5, size = 1 }: { position: Vec3; rate?: number; rise?: number; size?: number }) {
   const mesh = useRef<THREE.InstancedMesh>(null)
+  useEmitter('steam', mesh)
   const seeds = useMemo(() => Array.from({ length: PUFFS }, () => [Math.random(), Math.random() - 0.5, Math.random() - 0.5]), [])
 
   useFrame(({ clock }) => {

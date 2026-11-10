@@ -5,6 +5,8 @@ import * as THREE from 'three'
 export const playerPos = new THREE.Vector3()
 // Rijrichting in radialen (0 = naar +z), voor de pijl op de minikaart.
 export const playerHeading = { yaw: 0 }
+// Snelheid en gas, genormaliseerd (-1..1), voor het motorgeluid.
+export const playerDrive = { speed: 0, throttle: 0 }
 
 // Optionele vaste camera voor screenshots: ?cam=x,y,z,tx,ty,tz
 const camParam = new URLSearchParams(location.search).get('cam')

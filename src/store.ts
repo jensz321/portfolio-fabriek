@@ -1,10 +1,21 @@
 import { create } from 'zustand'
 import type { ZoneId } from './content'
 
+const MUTE_KEY = 'fabriek-muted'
+function readMuted() {
+  try {
+    return localStorage.getItem(MUTE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 type State = {
   // started: alle modellen en fonts zijn geladen, de heftruck mag rijden.
   started: boolean
   setReady: () => void
+  muted: boolean
+  toggleMute: () => void
   activeZone: ZoneId | null
   visited: Set<ZoneId>
   enterZone: (id: ZoneId) => void
@@ -17,6 +28,16 @@ type State = {
 export const useStore = create<State>((set) => ({
   started: false,
   setReady: () => set({ started: true }),
+  muted: readMuted(),
+  toggleMute: () =>
+    set((s) => {
+      try {
+        localStorage.setItem(MUTE_KEY, s.muted ? '0' : '1')
+      } catch {
+        // opslag geblokkeerd: dan onthouden we het alleen deze sessie
+      }
+      return { muted: !s.muted }
+    }),
   activeZone: null,
   visited: new Set(),
   enterZone: (id) => set((s) => ({ activeZone: id, visited: new Set(s.visited).add(id) })),

@@ -337,3 +337,51 @@ canvas {
     top: 64px;
   }
 }
+
+/* ---------- geluidsknop ---------- */
+
+.hud__sound {
+  pointer-events: auto;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: var(--ink);
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.hud__sound:hover {
+  background: #fff;
+}
+
+.hud__sound svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hud__sound svg path:first-child {
+  fill: currentColor;
+}
+
+.hud__sound + .hud__classic {
+  margin-left: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

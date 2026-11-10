@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import type { Vec3 } from '../../layout'
 import { Kit } from '../kit'
 import { KitBox } from '../style'
+import { useEmitter } from '../../audio/useSound'
 import { Cargo } from './Cargo'
 
 export type ConveyorHandle = {
@@ -33,6 +34,8 @@ export function Conveyor({ start, tiles, angle = 0, height = 0, speed = 2.2, poo
   const boxes = useRef<(RapierRigidBody | null)[]>([])
   const next = useRef(0)
   const timer = useRef(interval * 0.5)
+  const sound = useRef<THREE.Group>(null)
+  useEmitter('belt', sound)
 
   const spawnPoint = useMemo(
     () => new THREE.Vector3(...start).addScaledVector(dir, 1.2).setY(height + BELT_TOP + 0.4),
@@ -75,6 +78,7 @@ export function Conveyor({ start, tiles, angle = 0, height = 0, speed = 2.2, poo
   return (
     <>
       <group position={start} rotation-y={angle}>
+        <group ref={sound} position={[length / 2, height + 1, 0]} />
         {Array.from({ length: tiles }, (_, i) => (
           <Kit key={i} name="conveyor-long-stripe-sides" position={[TILE / 2 + i * TILE, height, 0]} />
         ))}

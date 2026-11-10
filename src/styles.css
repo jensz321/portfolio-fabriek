@@ -215,3 +215,125 @@ canvas {
     transform: translateY(0);
   }
 }
+
+/* ---------- minikaart ---------- */
+
+.minimap {
+  position: fixed;
+  top: 64px;
+  left: 16px;
+  width: 170px;
+  padding: 8px;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 4px 4px 0 var(--ink);
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.4s 0.3s, transform 0.4s 0.3s;
+}
+
+.minimap--show {
+  opacity: 1;
+  transform: none;
+}
+
+.minimap svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.minimap__hall {
+  fill: #dcd9e8;
+}
+
+.minimap__yard {
+  fill: #a9a7bd;
+}
+
+.minimap__wall {
+  fill: none;
+  stroke: #323245;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.minimap__zone.is-active rect {
+  animation: zone-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes zone-pulse {
+  to {
+    fill-opacity: 1;
+    stroke-width: 2;
+  }
+}
+
+.minimap__check {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.minimap__halo {
+  fill: rgb(50 50 69 / 0.15);
+}
+
+.minimap__player {
+  fill: #ff7e44;
+  stroke: #323245;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+/* ---------- hint ---------- */
+
+.hint {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  max-width: calc(100vw - 32px);
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+  color: var(--cream);
+  background: var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgb(50 50 69 / 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -12px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+
+.hint--show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  transition-delay: 0.6s;
+}
+
+@media (pointer: coarse) {
+  /* op telefoon rechtsonder: links zit de joystick, bovenin het paneel */
+  .minimap {
+    top: auto;
+    left: auto;
+    right: 16px;
+    bottom: 24px;
+    width: 110px;
+  }
+
+  .hint {
+    top: 64px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hint {
+    top: 64px;
+  }
+}

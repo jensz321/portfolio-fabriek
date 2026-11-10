@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { KeyboardControls, type KeyboardControlsEntry } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
@@ -10,6 +10,10 @@ import { palette } from './layout'
 import { Hud } from './ui/Hud'
 import { Panel } from './ui/Panel'
 import { Joystick } from './ui/Joystick'
+import { Loader } from './ui/Loader'
+import { Minimap } from './ui/Minimap'
+import { Hint } from './ui/Hint'
+import { useStore } from './store'
 
 const keyMap: KeyboardControlsEntry<Controls>[] = [
   { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -38,11 +42,22 @@ export default function App() {
             <Forklift />
           </Physics>
           <Lighting />
+          <Ready />
         </Suspense>
       </Canvas>
       <Hud />
       <Panel />
       <Joystick />
+      <Minimap />
+      <Hint />
+      <Loader />
     </KeyboardControls>
   )
+}
+
+// Wordt pas gemount als alles binnen de Suspense (modellen, fonts) geladen is.
+function Ready() {
+  const setReady = useStore((s) => s.setReady)
+  useEffect(setReady, [setReady])
+  return null
 }

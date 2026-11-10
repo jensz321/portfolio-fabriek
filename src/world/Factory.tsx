@@ -102,7 +102,7 @@ const FLAT_ROT: Vec3 = [-Math.PI / 2, 0, 0]
 
 /* ---------- vloer, muren, poort ---------- */
 
-const YARD_END = 62
+const YARD_END = WORLD.yardEnd
 
 function Ground() {
   const h = WORLD.half

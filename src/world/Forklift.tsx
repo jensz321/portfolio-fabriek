@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { WORLD } from '../layout'
 import { FLAT as COLOR, KitBox, KitCylinder, type Swatch } from './style'
 import { useStore } from '../store'
-import { debugCam, playerPos } from './player'
+import { debugCam, playerHeading, playerPos } from './player'
 
 export type Controls = 'forward' | 'back' | 'left' | 'right' | 'reset'
 
@@ -21,6 +21,8 @@ const _pos = new THREE.Vector3()
 const _camTarget = new THREE.Vector3()
 const _quat = new THREE.Quaternion()
 const _euler = new THREE.Euler()
+// Zolang het startscherm open staat, reageert de heftruck nergens op.
+const IDLE = { forward: false, back: false, left: false, right: false, reset: false }
 
 export function Forklift() {
   const body = useRef<RapierRigidBody>(null)
@@ -34,7 +36,7 @@ export function Forklift() {
     if (!rb) return
     dt = Math.min(dt, 0.05)
 
-    const keys = getKeys()
+    const keys = useStore.getState().started ? getKeys() : IDLE
     const touch = useStore.getState().touch
     const throttle = (keys.forward ? 1 : 0) - (keys.back ? 1 : 0) + touch.y
     const steer = (keys.left ? 1 : 0) - (keys.right ? 1 : 0) - touch.x
@@ -55,6 +57,7 @@ export function Forklift() {
     const rot = rb.rotation()
     _euler.setFromQuaternion(_quat.set(rot.x, rot.y, rot.z, rot.w), 'YXZ')
     const yaw = _euler.y
+    playerHeading.yaw = yaw
     const v = rb.linvel()
 
     // Sturen werkt alleen als je rijdt, en achteruit draait het stuur om (zoals bij een echte truck).

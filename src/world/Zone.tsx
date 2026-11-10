@@ -1,12 +1,12 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
+import { Billboard, Text } from '@react-three/drei'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
 import { zones, type ZoneId } from '../content'
-import { zoneLayout } from '../layout'
+import { zoneLayout, zoneSigns } from '../layout'
 import { useStore } from '../store'
-import { FONT } from './style'
+import { FLAT, FONT, KitBox, type Swatch } from './style'
 
 // Een vak op de vloer: rij erin en het bijbehorende paneel klapt open.
 export function Zone({ id }: { id: ZoneId }) {
@@ -67,6 +67,44 @@ export function Zone({ id }: { id: ZoneId }) {
           }}
         />
       </RigidBody>
+      {zoneSigns[id] && <Sign text={zoneSigns[id]} color={color} active={active} seed={pos[0]} />}
+    </group>
+  )
+}
+
+const SIGN_Y = 6.5
+
+// Zwevend bord boven de hal, van ver te zien. Krimpt weg als je in de zone staat,
+// zodat het niet tussen de camera en de heftruck hangt.
+function Sign({ text, color, active, seed }: { text: string; color: string; active: boolean; seed: number }) {
+  const group = useRef<THREE.Group>(null)
+  const swatch = (Object.keys(FLAT) as Swatch[]).find((k) => FLAT[k] === color) ?? 'navy'
+  const width = text.length * 0.5 + 1.6
+
+  useFrame(({ clock }, dt) => {
+    const g = group.current
+    if (!g) return
+    const s = THREE.MathUtils.lerp(g.scale.x, active ? 0 : 1, 1 - Math.exp(-10 * dt))
+    g.scale.setScalar(Math.max(s, 0.001))
+    g.visible = s > 0.01
+    g.position.y = SIGN_Y + Math.sin(clock.elapsedTime * 1.4 + seed) * 0.2
+  })
+
+  return (
+    <group ref={group} position-y={SIGN_Y}>
+      <Billboard>
+        <KitBox size={[width, 1.5, 0.3]} swatch={swatch} radius={0.3} castShadow={false} />
+        <Text
+          position={[0, 0, 0.17]}
+          fontSize={0.8}
+          color={swatch === 'yellow' ? FLAT.navy : FLAT.white}
+          font={FONT.display}
+          anchorX="center"
+          anchorY="middle"
+        >
+          {text}
+        </Text>
+      </Billboard>
     </group>
   )
 }

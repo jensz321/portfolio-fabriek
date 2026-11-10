@@ -11,6 +11,7 @@ export const WORLD = {
   gateWidth: 14,
   spawn: [0, 1, 52] as Vec3,
   spawnYaw: Math.PI, // met de vorken naar de fabriek
+  yardEnd: 62, // het buitenterrein voor de poort loopt tot hier
 }
 
 // Middelpunt en grootte (breedte x diepte) van elke zone op de vloer.
@@ -38,4 +39,16 @@ export const palette = {
   blue: '#5b6ee1',
   green: '#2fa36b',
   cream: '#f6f3fa',
+}
+
+// Korte tekst voor de zwevende borden boven elke hal (de poort heeft zijn eigen bord).
+export const zoneSigns: Partial<Record<ZoneId, string>> = {
+  over: 'Over mij',
+  route: 'Mijn route',
+  raket: 'Stage',
+  padplanner: 'PadPlanner',
+  'wie-rijdt': 'Wie rijdt er?',
+  fabriek: '3D-fabriek',
+  school: 'Schoolwerk',
+  contact: 'Contact',
 }

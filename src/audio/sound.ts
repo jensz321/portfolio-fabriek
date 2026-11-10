@@ -111,17 +111,26 @@ function build(ac: AudioContext) {
   chain(loop(brown), filter('lowpass', 380), gain(0.05), master)
   chain(osc('sine', 50), gain(0.012), master)
 
-  // Heftruck: een zachte, gedempte motorhum (geen hoge toon, die werd snel irritant)
-  // plus het rollen van de banden, dat vooral met de snelheid meegroeit.
-  const hum = osc('sine', 70)
-  const humGain = gain()
-  chain(hum, filter('lowpass', 300), humGain, master)
-  const rollFilter = filter('lowpass', 250)
-  const rollGain = gain()
-  chain(loop(brown), rollFilter, rollGain, master)
-  const rumble = osc('sawtooth', 40)
-  const rumbleGain = gain()
-  chain(rumble, filter('lowpass', 170), rumbleGain, master)
+  // Heftruck: een kleine verbrandingsmotor. Twee licht ontstemde zaagtanden plus een sub-octaaf
+  // geven de grom; een pulserende versterker op het ontstekingsritme geeft het "pruttelen".
+  // Toerental en filter lopen mee met gas en snelheid.
+  const engineA = osc('sawtooth', 32)
+  const engineB = osc('sawtooth', 32)
+  const engineSub = osc('square', 16)
+  const engineMix = gain(0.5)
+  engineA.connect(engineMix)
+  engineB.connect(engineMix)
+  chain(engineSub, gain(0.6), engineMix)
+  const engineFilter = filter('lowpass', 400, 3)
+  const grit = ac.createWaveShaper()
+  grit.curve = new Float32Array(Array.from({ length: 256 }, (_, i) => Math.tanh(((i / 255) * 2 - 1) * 2.5)))
+  const pulse = gain(0.6)
+  const firing = osc('square', 16)
+  const firingDepth = gain(0.4)
+  chain(firing, firingDepth)
+  firingDepth.connect(pulse.gain)
+  const engineGain = gain()
+  chain(engineMix, grit, engineFilter, pulse, engineGain, master)
   const reverse = gain()
   chain(osc('square', 1100), filter('lowpass', 2500), reverse, master)
 
@@ -158,12 +167,9 @@ function build(ac: AudioContext) {
   return {
     master,
     white,
-    hum,
-    humGain,
-    rollFilter,
-    rollGain,
-    rumble,
-    rumbleGain,
+    engine: [engineA, engineB, engineSub, firing],
+    engineFilter,
+    engineGain,
     reverse,
     beepGate,
     pressIn,
@@ -187,12 +193,17 @@ export function updateSound(player: THREE.Vector3, speed: number, throttle: numb
   const t = ctx.currentTime
   const s = Math.abs(speed)
 
-  set(graph.humGain.gain, 0.012 + 0.02 * s)
-  set(graph.hum.frequency, 65 + 45 * s)
-  set(graph.rollGain.gain, 0.12 * s)
-  set(graph.rollFilter.frequency, 200 + 500 * s)
-  set(graph.rumbleGain.gain, 0.02 + 0.025 * Math.min(1, Math.abs(throttle)))
-  set(graph.rumble.frequency, 38 + 30 * s)
+  // Toeren: stationair ~30 Hz ontstekingen, gas geven laat hem al optoeren voordat hij rijdt.
+  const load = Math.min(1, Math.abs(throttle))
+  const rpm = Math.min(1, 0.65 * s + 0.35 * load)
+  const f = 30 + 55 * rpm
+  const [a, b, sub, firing] = graph.engine
+  set(a.frequency, f, 0.15)
+  set(b.frequency, f * 1.012, 0.15)
+  set(sub.frequency, f / 2, 0.15)
+  set(firing.frequency, f / 2, 0.15)
+  set(graph.engineFilter.frequency, 280 + 700 * rpm + 300 * load)
+  set(graph.engineGain.gain, 0.05 + 0.04 * rpm)
   set(graph.reverse.gain, speed < -0.05 && t % 0.8 < 0.4 ? 0.035 : 0, 0.01)
   set(graph.beepGate.gain, t % 0.9 < 0.45 ? 1 : 0, 0.005)
 

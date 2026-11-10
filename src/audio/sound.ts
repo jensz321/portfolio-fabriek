@@ -111,10 +111,14 @@ function build(ac: AudioContext) {
   chain(loop(brown), filter('lowpass', 380), gain(0.05), master)
   chain(osc('sine', 50), gain(0.012), master)
 
-  // Heftruck: elektrisch gejank dat meestijgt met de snelheid, plus een laag gebrom bij gas geven.
-  const whine = osc('triangle', 180)
-  const whineGain = gain()
-  chain(whine, whineGain, master)
+  // Heftruck: een zachte, gedempte motorhum (geen hoge toon, die werd snel irritant)
+  // plus het rollen van de banden, dat vooral met de snelheid meegroeit.
+  const hum = osc('sine', 70)
+  const humGain = gain()
+  chain(hum, filter('lowpass', 300), humGain, master)
+  const rollFilter = filter('lowpass', 250)
+  const rollGain = gain()
+  chain(loop(brown), rollFilter, rollGain, master)
   const rumble = osc('sawtooth', 40)
   const rumbleGain = gain()
   chain(rumble, filter('lowpass', 170), rumbleGain, master)
@@ -154,8 +158,10 @@ function build(ac: AudioContext) {
   return {
     master,
     white,
-    whine,
-    whineGain,
+    hum,
+    humGain,
+    rollFilter,
+    rollGain,
     rumble,
     rumbleGain,
     reverse,
@@ -181,9 +187,11 @@ export function updateSound(player: THREE.Vector3, speed: number, throttle: numb
   const t = ctx.currentTime
   const s = Math.abs(speed)
 
-  set(graph.whineGain.gain, 0.01 + 0.045 * s)
-  set(graph.whine.frequency, 160 + 560 * s)
-  set(graph.rumbleGain.gain, 0.035 + 0.05 * Math.min(1, Math.abs(throttle)))
+  set(graph.humGain.gain, 0.012 + 0.02 * s)
+  set(graph.hum.frequency, 65 + 45 * s)
+  set(graph.rollGain.gain, 0.12 * s)
+  set(graph.rollFilter.frequency, 200 + 500 * s)
+  set(graph.rumbleGain.gain, 0.02 + 0.025 * Math.min(1, Math.abs(throttle)))
   set(graph.rumble.frequency, 38 + 30 * s)
   set(graph.reverse.gain, speed < -0.05 && t % 0.8 < 0.4 ? 0.035 : 0, 0.01)
   set(graph.beepGate.gain, t % 0.9 < 0.45 ? 1 : 0, 0.005)
